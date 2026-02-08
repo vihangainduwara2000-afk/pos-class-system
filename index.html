@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPHA-Science | Management System</title>
+
+    <!-- Global Error Handler -->
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ef4444;color:white;padding:15px;z-index:99999;font-family:sans-serif;font-size:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);';
+            errDiv.innerHTML = `<b>Critical Error:</b> ${msg}<br><small>Location: ${url}:${line}:${col}</small><br><button onclick="location.reload()" style="margin-top:10px;padding:5px 10px;background:white;color:#ef4444;border:none;border-radius:4px;font-weight:bold;cursor:pointer;">Refresh Page</button>`;
+            document.body.appendChild(errDiv);
+            return false;
+        };
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff1f1',
+                            100: '#ffe1e1',
+                            200: '#ffc7c7',
+                            300: '#ffa0a0',
+                            400: '#ff6969',
+                            500: '#db0b1e', // Bright Red from user
+                            600: '#9e181c', // Dark Red from user
+                            700: '#a91216',
+                            800: '#8c1316',
+                            900: '#751618',
+                        },
+                        dark: '#000000', // Black from user
+                        glass: 'rgba(255, 255, 255, 0.7)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Libraries -->
+    <!-- Firebase SDKs (Compat for easiest migration) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+
+<body class="bg-gray-50 text-gray-800 h-screen flex overflow-hidden selection:bg-brand-500 selection:text-white">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-20 hidden md:flex"
+        id="sidebar">
+        <div class="p-6 flex flex-col items-center border-b border-gray-100">
+            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center p-2 mb-3">
+                <span class="text-brand-500 text-4xl font-bold">α</span>
+            </div>
+            <div class="text-center">
+                <h1 class="font-bold text-xl tracking-tight text-dark uppercase">ALPHA-Science</h1>
+                <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase">Vihanga Wanigasingha</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+            <a href="#"
+                class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="dashboard">
+                <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="students">
+                <i class="fa-solid fa-users w-5"></i> Students
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="payments">
+                <i class="fa-solid fa-credit-card w-5"></i> Payments
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="exams">
+                <i class="fa-solid fa-file-pen w-5"></i> Exams & Marks
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="logistics">
+                <i class="fa-solid fa-truck-fast w-5"></i> Logistics
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="labels">
+                <i class="fa-solid fa-barcode w-5"></i> Barcode & Labels
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-brand-600 transition-colors"
+                data-page="resources">
+                <i class="fa-solid fa-folder-open w-5"></i> Resources
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100">
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+
+        <!-- Header -->
+        <header
+            class="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-6 z-10 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <h2 id="page-title" class="text-lg font-semibold text-gray-800">Overview</h2>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="relative hidden sm:block">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" placeholder="Search (ID, Name, Phone)..."
+                        class="pl-10 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-brand-500 w-64 transition-all">
+                </div>
+
+                <button
+                    class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-brand-50 hover:text-brand-600 transition-colors relative">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div
+                    class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">
+                    AD
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div id="app-content" class="flex-1 overflow-y-auto p-6 scroll-smooth">
+            <div id="loading" class="hidden flex items-center justify-center h-full">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Application Logic (Loaded Sequentially) -->
+    <script src="js/db.js"></script>
+    <script src="js/views/dashboard.js"></script>
+    <script src="js/views/students.js"></script>
+    <script src="js/views/payments.js"></script>
+    <script src="js/views/exams.js"></script>
+    <script src="js/views/logistics.js"></script>
+    <script src="js/views/labels.js"></script>
+    <script src="js/views/resources.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
